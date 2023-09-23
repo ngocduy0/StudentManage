@@ -4,6 +4,7 @@ import Entity.Report;
 import Entity.Student;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 
 
 public class Manager {
@@ -167,35 +168,41 @@ public class Manager {
     }
 
     
+
     public static void report(ArrayList<Student> ls) {
-        if (ls.isEmpty()) {
-            System.err.println("List empty.");
-            return;
+    if (ls.isEmpty()) {
+        System.err.println("List empty.");
+        return;
+    }
+    ArrayList<Report> lr = new ArrayList<>();
+    
+    // Tạo một HashMap để lưu tổng số lần xuất hiện của mỗi sinh viên trong từng khóa học
+    HashMap<String, HashMap<String, Integer>> courseCountMap = new HashMap<>();
+    
+    // Lặp qua danh sách sinh viên và cập nhật thông tin trong HashMap
+    for (Student student : ls) {
+        String studentName = student.getStudentName();
+        String courseName = student.getCourseName();
+        if (!courseCountMap.containsKey(studentName)) {
+            courseCountMap.put(studentName, new HashMap<>());
         }
-        ArrayList<Report> lr = new ArrayList<>();
-        int size = ls.size();
-        for (int i = 0; i < size; i++) {
-            int total = 0;
-            for (Student student : ls) {
-                String id = student.getId();
-                String courseName = student.getCourseName();
-                String studentName = student.getStudentName();
-                for (Student studentCountTotal : ls) {
-                    if (id.equalsIgnoreCase(studentCountTotal.getId())
-                            && courseName.equalsIgnoreCase(studentCountTotal.getCourseName())) {
-                        total++;
-                    }
-                }
-                if (Validation.checkReportExist(lr, studentName,
-                        courseName, total)) {
-                    lr.add(new Report(student.getStudentName(), studentName, total));
-                }
-            }
-        }
-        
-        for (int i = 0; i < lr.size(); i++) {
-            System.out.printf("%-20s|%-20s|%-20d\n", lr.get(i).getStudentName(),
-                    lr.get(i).getCourseName(), lr.get(i).getTotalCourse());
+        HashMap<String, Integer> studentCourseCount = courseCountMap.get(studentName);
+        studentCourseCount.put(courseName, studentCourseCount.getOrDefault(courseName, 0) + 1);
+    }
+    
+    // Lặp qua HashMap và tạo danh sách báo cáo
+    for (String studentName : courseCountMap.keySet()) {
+        HashMap<String, Integer> studentCourseCount = courseCountMap.get(studentName);
+        for (String courseName : studentCourseCount.keySet()) {
+            int total = studentCourseCount.get(courseName);
+            lr.add(new Report(studentName, courseName, total));
         }
     }
+    
+    // In ra danh sách báo cáo
+    for (Report report : lr) {
+        System.out.printf("%-20s|%-20s|%-20d\n", report.getStudentName(),
+                report.getCourseName(), report.getTotalCourse());
+    }
+}
 }
